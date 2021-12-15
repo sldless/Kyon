@@ -34,12 +34,24 @@ bot.command(:ping, description: "Gets the bot ping", usage: 'ping', min_args: 0)
 end
 
 bot.command(:setprefix, description: "Set a custom prefix for your server", usage: 'setprefix <prefix>', min_args: 1, max_args: 1) do |event, *prefix|
-    if (data[event.message.server.id])
-        data[event.message.server.id][:prefix] = prefix[0]
+    if (data[event.message.server.id] == nil)
+        data[event.message.server.id] = {'prefix': prefix[0]} 
     else
-        data[event.message.server.id] = {'prefix': prefix[0]}
+        data[event.message.server.id]['prefix'] = prefix[0]
     end
     File.write(filename, JSON.dump(data))
     event.respond "The server prefix is now `#{prefix[0]}`"
+end
+
+bot.command(:eval, description: "A eval command", usage: "eval <code>", min_args: 1) do |event, *code|
+    if (config['owners'].include?("#{event.message.author.id}") == true)
+        begin 
+            eval code.join()
+        rescue => e
+            event.respond e
+        else 
+            event.respond "Only owner command"
+        end
+    end
 end
 bot.run 
